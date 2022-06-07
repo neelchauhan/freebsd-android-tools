@@ -1,0 +1,127 @@
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  upload-src:
+    name: Upload the source
+    runs-on: ubuntu-latest
+    steps:
+      - name: prep ubuntu
+        run: |
+          sudo apt-get update
+          DEBIAN_FRONTEND=noninteractive sudo apt-get install -yq \
+            ${{ matrix.pkgs }} cmake git golang libbrotli-dev \
+            libgtest-dev liblz4-dev libpcre2-dev libprotobuf-dev libunwind-dev \
+            libusb-1.0-0-dev libzstd-dev make pkg-config
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: git config
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+      - name: build & install
+        run: |
+          mkdir build && cd build
+          cmake ..
+          make package_source
+      - name: upload package_source
+        uses: actions/upload-artifact@v2
+        with:
+          name: package_source
+          path: ${{ github.workspace }}/build/android-tools-*.tar.xz
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: "opensuse/leap:15.3"
+            pkgs: "clang gcc10 gcc10-c++"
+            env1: "CC=clang CXX=clang++"
+          - os: "opensuse/tumbleweed"
+            pkgs: "gcc gcc-c++"
+          - os: "opensuse/tumbleweed"
+            pkgs: clang
+            env1: "CC=clang CXX=clang++"
+          - os: "archlinux:base"
+            pkgs: gcc
+          - os: "archlinux:base"
+            pkgs: clang
+            env1: "CC=clang CXX=clang++"
+          - os: "ubuntu:20.04"
+            pkgs: "gcc-10 g++-10"
+            env1: "CC=gcc-10 CXX=g++-10"
+          - os: "ubuntu:20.04"
+            pkgs: "clang-11 libstdc++-10-dev"
+            env1: "CC=clang-11 CXX=clang++-11"
+          - os: "alpine"
+            pkgs: "gcc"
+            env1: "CC=gcc CXX=g++"
+
+    container:
+      image: ${{ matrix.os }}
+      # New versions of glibc use the new clone3() syscall which has not
+      # yet been whitelisted in GitHub's secomp profile. To prevent jobs
+      # using these distros from failing (e.g. OpenSUSE) change the
+      # secomp policy.
+      #
+      # See https://github.com/nmeum/android-tools/pull/48#issuecomment-944893176
+      options: --security-opt seccomp=unconfined
+
+    steps:
+      - name: prep opensuse
+        if: startsWith(matrix.os, 'opensuse')
+        run: |
+          zypper -n ref
+          zypper -n in ${{ matrix.pkgs }} cmake git go gtest pcre2-devel pkgconfig \
+            'pkgconfig(libbrotlicommon)' 'pkgconfig(liblz4)' \
+            'pkgconfig(libunwind-generic)' 'pkgconfig(libusb-1.0)' \
+            'pkgconfig(libzstd)' 'pkgconfig(protobuf)' ninja
+
+      - name: prep archlinux
+        if: startsWith(matrix.os, 'archlinux')
+        run: |
+          pacman -Syu --needed --noconfirm \
+            ${{ matrix.pkgs }} brotli cmake git go gtest libunwind \
+            libusb lz4 pcre2 pkgconfig protobuf zstd ninja
+
+      - name: prep ubuntu
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -yq \
+            ${{ matrix.pkgs }} cmake git golang libbrotli-dev \
+            libgtest-dev liblz4-dev libpcre2-dev libprotobuf-dev libunwind-dev \
+            libusb-1.0-0-dev libzstd-dev pkg-config protobuf-compiler ninja-build
+
+      - name: prep alpine
+        if: startsWith(matrix.os, 'alpine')
+        run: |
+          apk add build-base pcre2-dev linux-headers libusb-dev gtest-dev samurai \
+          go git perl cmake protobuf-dev brotli-dev zstd-dev lz4-dev
+
+      # required for patches
+      - name: git config
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: build & install
+        run: |
+          test -n "${{ matrix.env1 }}" && export ${{ matrix.env1 }}
+          test -n "${{ matrix.env2 }}" && export ${{ matrix.env2 }}
+          mkdir build && cd build
+          cmake -DCMAKE_C_FLAGS="$CFLAGS" -DCMAKE_CXX_FLAGS="$CXXFLAGS" -DCMAKE_BUILD_TYPE=Release -GNinja ..
+          ninja --verbose
+          echo -e "\n### make install ###\n"
+          ninja install
+          echo -e "\n### all done ###\n"
