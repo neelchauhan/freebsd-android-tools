@@ -49,7 +49,7 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
-#ifdef HAVE_SYS_SYSMACROS_H
+#if defined(HAVE_SYS_SYSMACROS_H) && !defined(__FreeBSD__)
 #include <sys/sysmacros.h>
 #endif
 

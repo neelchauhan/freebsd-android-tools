@@ -42,6 +42,10 @@
 #include <errno.h>
 #include <assert.h>
 
+#ifdef __FreeBSD__
+#define mmap64 mmap
+#endif
+
 using namespace android;
 
 /*static*/ long FileMap::mPageSize = -1;

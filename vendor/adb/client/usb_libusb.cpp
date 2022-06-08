@@ -35,7 +35,7 @@
 #include <thread>
 #include <unordered_map>
 
-#include <libusb-1.0/libusb.h>
+#include <libusb.h>
 
 #include <android-base/file.h>
 #include <android-base/logging.h>

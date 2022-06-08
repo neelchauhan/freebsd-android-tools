@@ -20,7 +20,7 @@
 #ifndef _LIBS_UTILS_ENDIAN_H
 #define _LIBS_UTILS_ENDIAN_H
 
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(__APPLE__) || defined(_WIN32) || defined(__FreeBSD__)
 
 #define __BIG_ENDIAN 0x1000
 #define __LITTLE_ENDIAN 0x0001

@@ -27,6 +27,10 @@
 #include <utils/Compat.h>
 #include <utils/Log.h>
 
+#ifdef __FreeBSD__
+#define lseek64 lseek
+#endif
+
 //#define DEBUG 1
 
 #define kFooterTagSize 8  /* last two 32-bit integers */

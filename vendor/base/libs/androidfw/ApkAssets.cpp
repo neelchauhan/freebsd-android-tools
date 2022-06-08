@@ -32,6 +32,10 @@
 #include "androidfw/misc.h"
 #include "androidfw/Util.h"
 
+#ifdef __FreeBSD__
+#define lseek64 lseek
+#endif
+
 namespace android {
 
 using base::SystemErrorCodeToString;
