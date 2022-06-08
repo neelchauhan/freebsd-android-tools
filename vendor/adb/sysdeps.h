@@ -49,6 +49,12 @@ static inline void* mempcpy(void* dst, const void* src, size_t n) {
 }
 #endif
 
+#ifdef __FreeBSD__
+#define lseek64 lseek
+#define pread64 pread
+#define pwrite64 pwrite
+#endif
+
 // Clang-only nullability specifiers
 #ifndef __clang__
 #define _Nonnull

@@ -35,7 +35,7 @@
 #include <optional>
 #include <vector>
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) || defined(__FreeBSD__)
 #define lseek64 lseek
 #endif
 

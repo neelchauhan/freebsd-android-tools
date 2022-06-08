@@ -439,7 +439,7 @@ bool Realpath(const std::string& path, std::string* result) {
 #endif
 
 std::string GetExecutablePath() {
-#if defined(__linux__)
+#if defined(__linux__) || defined(__FreeBSD__)
   std::string path;
   android::base::Readlink("/proc/self/exe", &path);
   return path;

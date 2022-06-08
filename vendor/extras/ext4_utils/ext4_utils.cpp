@@ -36,6 +36,10 @@
 #include <sys/disk.h>
 #endif
 
+#ifdef __FreeBSD__
+#define lseek64 lseek
+#endif
+
 #include "helpers.h"
 
 int force = 0;

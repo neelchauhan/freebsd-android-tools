@@ -34,6 +34,10 @@
 
 #include "pairing.pb.h"
 
+#ifdef __FreeBSD__
+#include <netinet/in.h>
+#endif
+
 using namespace adb;
 using android::base::unique_fd;
 using TlsError = tls::TlsConnection::TlsError;

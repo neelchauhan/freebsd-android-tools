@@ -31,7 +31,7 @@
 #if HAVE_SYS_MKDEV_H
 #include <sys/mkdev.h>
 #endif
-#ifdef HAVE_SYS_SYSMACROS_H
+#if defined(HAVE_SYS_SYSMACROS_H) && !defined(__FreeBSD__)
 #include <sys/sysmacros.h>
 #endif
 

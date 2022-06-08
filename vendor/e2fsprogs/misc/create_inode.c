@@ -28,7 +28,7 @@
 #ifdef HAVE_SYS_IOCTL_H
 #include <sys/ioctl.h>
 #endif
-#ifdef HAVE_SYS_SYSMACROS_H
+#if defined(HAVE_SYS_SYSMACROS_H) && !defined(__FreeBSD__)
 #include <sys/sysmacros.h>
 #endif
 

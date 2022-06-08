@@ -129,7 +129,7 @@ static const char* getprogname() {
 
   return progname;
 #else
-  return program_invocation_short_name;
+  return "";
 #endif
 }
 #endif
