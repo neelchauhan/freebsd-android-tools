@@ -70,8 +70,11 @@ struct usb_ifc_info {
 
 typedef int (*ifc_match_func)(usb_ifc_info *ifc);
 
+static auto& g_usb_handles_mutex = *new std::mutex();
+static auto& g_usb_handles = *new std::list<usb_handle*>();
+
 static int 
-probe(std::unique_ptr<usb_handle> &h, ifc_match_func callback)
+probe(std::unique_ptr<usb_handle> &h)
 {
 	usb_ifc_info info;
 	libusb_device_descriptor ddesc;
@@ -140,7 +143,10 @@ probe(std::unique_ptr<usb_handle> &h, ifc_match_func callback)
 		if (libusb_claim_interface(h->handle, h->iface) < 0)
 			continue;
 
-		if (callback(&info) == 0) {
+		if (is_adb_interface(info.ifc_class, info.ifc_subclass, info.ifc_protocol)) {
+			std::lock_guard<std::mutex> lock(g_usb_handles_mutex);
+			g_usb_handles.push_back(h);
+			register_usb_transport(h, info.serial_number, dev_path, h->writeable);
 			libusb_free_config_descriptor(pcfg);
 			return (0);
 		}
@@ -153,13 +159,14 @@ probe(std::unique_ptr<usb_handle> &h, ifc_match_func callback)
 }
 
 static std::unique_ptr<usb_handle>
-enumerate(ifc_match_func callback)
+enumerate()
 {
 	static libusb_context *ctx = NULL;
 	std::unique_ptr<usb_handle> h;
 	libusb_device **ppdev;
 	ssize_t ndev;
 	ssize_t x;
+	bool done = false;
 
 	if (ctx == NULL)
 		libusb_init(&ctx);
@@ -171,7 +178,7 @@ enumerate(ifc_match_func callback)
 
 		h->dev = ppdev[x];
 
-		if (probe(h, callback) == 0) {
+		if (probe(h) == 0) {
 			libusb_ref_device(h->dev);
 			libusb_free_device_list(ppdev, 1);
 			return (h);
@@ -207,6 +214,9 @@ usb_read(usb_handle *h, void *_data, int len)
 int
 usb_close(usb_handle* h)
 {
+	std::lock_guard<std::mutex> lock(g_usb_handles_mutex);
+	g_usb_handles.remove(h);
+
 	libusb_close(h->handle);
 	h->handle = NULL;
 	libusb_unref_device(h->dev);
@@ -231,8 +241,47 @@ usb_get_max_packet_size(usb_handle* h)
     return h->max_packet_size;
 }
 
+static void
+kick_disconnected_devices()
+{
+    std::lock_guard<std::mutex> lock(g_usb_handles_mutex);
+    // kick any devices in the device list that were not found in the device scan
+    for (usb_handle* usb : g_usb_handles) {
+        if (!usb->mark) {
+            usb_kick(usb);
+        } else {
+            usb->mark = false;
+        }
+    }
+}
+
+static void
+device_poll_thread()
+{
+    adb_thread_setname("device poll");
+    D("Created device thread");
+    while (true) {
+        //find_usb_device("/dev/bus/usb", register_device);
+        enumerate();
+        adb_notify_device_scan_complete();
+        kick_disconnected_devices();
+        std::this_thread::sleep_for(1s);
+    }
+}
+
 void
-usb_init() {}
+usb_init()
+{
+    struct sigaction actions;
+    memset(&actions, 0, sizeof(actions));
+    sigemptyset(&actions.sa_mask);
+    actions.sa_flags = 0;
+    actions.sa_handler = [](int) {};
+    sigaction(SIGALRM, &actions, nullptr);
+
+    std::thread(device_poll_thread).detach();
+}
+
 
 void
 usb_cleanup() {}
