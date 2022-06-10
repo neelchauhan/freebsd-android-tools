@@ -42,7 +42,7 @@ find_package(BROTLI REQUIRED)
 find_package(LZ4 REQUIRED)
 find_package(Zstd REQUIRED)
 find_package(PCRE2 REQUIRED)
-include_directories(${PROTOBUF_INCLUDE_DIRS} ${BROTLI_INCLUDE_DIRS} ${LZ4_INCLUDE_DIR} ${ZSTD_INCLUDE_DIR} ${PCRE2_INCLUDE_DIR})
+include_directories(BEFORE SYSTEM ${PROTOBUF_INCLUDE_DIRS} ${BROTLI_INCLUDE_DIRS} ${LZ4_INCLUDE_DIR} ${ZSTD_INCLUDE_DIR} ${PCRE2_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 include(CMakeLists.libbase.txt)
