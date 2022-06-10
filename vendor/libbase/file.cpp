@@ -32,6 +32,9 @@
 #include <string>
 #include <vector>
 
+#if defined(__FreeBSD__)
+#include <sys/sysctl.h>
+#endif
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
 #endif
@@ -439,10 +442,21 @@ bool Realpath(const std::string& path, std::string* result) {
 #endif
 
 std::string GetExecutablePath() {
-#if defined(__linux__) || defined(__FreeBSD__)
+#if defined(__linux__)
   std::string path;
   android::base::Readlink("/proc/self/exe", &path);
   return path;
+#elif defined(__FreeBSD__)
+  int mib[4];
+  mib[0] = CTL_KERN;
+  mib[1] = KERN_PROC;
+  mib[2] = KERN_PROC_PATHNAME;
+  mib[3] = -1;
+  char path[PATH_MAX + 1];
+  size_t path_len = sizeof(path);
+  if (sysctl(mib, 4, path, &path_len, nullptr, 0) < 0)
+	  return "";
+  return (path);
 #elif defined(__APPLE__)
   char path[PATH_MAX + 1];
   uint32_t path_len = sizeof(path);
