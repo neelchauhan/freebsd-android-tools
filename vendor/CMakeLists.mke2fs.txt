@@ -134,9 +134,9 @@ if(HAVE_SYS_TYPES_H)
 endif(HAVE_SYS_TYPES_H)
 
 target_link_libraries(e2fsdroid
-	libext2fs libsparse libzip libcutils liblog libutil libbase libselinux libsepol z pcre2-8 pthread)
+	libext2fs libsparse libzip libcutils liblog libutil libbase z pthread ${PCRE2_LIBRARY})
 target_include_directories(e2fsdroid PRIVATE
-	e2fsprogs/lib e2fsprogs/lib/ext2fs selinux/libselinux/include core/libcutils/include e2fsprogs/misc)
+	e2fsprogs/lib e2fsprogs/lib/ext2fs core/libcutils/include e2fsprogs/misc)
 
 add_executable(ext2simg
 	e2fsprogs/contrib/android/ext2simg.c)
