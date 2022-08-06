@@ -1,5 +1,5 @@
 project(android-tools)
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.12.0)
 
 # To ease installation of utility files such as bash completions, etc.
 # See: https://cmake.org/cmake/help/latest/module/GNUInstallDirs.html
@@ -19,7 +19,7 @@ set(ANDROID_MKE2FS_NAME "mke2fs.android")
 
 # Version of android-tools and the version of boringssl being used.
 # See: https://android.googlesource.com/platform/external/boringssl/+/platform-tools-${ANDROID_VERSION}/BORINGSSL_REVISION
-set(ANDROID_VERSION 31.0.3p1)
+set(ANDROID_VERSION 31.0.3p2)
 set(BORINGSSL_VERSION ae2bb641735447496bed334c495e4868b981fe32)
 
 # Vendor string used in version outputs.
