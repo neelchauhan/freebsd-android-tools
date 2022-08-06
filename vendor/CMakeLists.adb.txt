@@ -23,8 +23,8 @@ add_library(libadb STATIC
 	adb/client/line_printer.cpp
 	adb/client/main.cpp
 	adb/client/pairing/pairing_client.cpp
+	adb/client/usb_freebsd.cpp
 	adb/client/usb_libusb.cpp
-	adb/client/usb_linux.cpp
 	adb/pairing_auth/aes_128_gcm.cpp
 	adb/pairing_auth/pairing_auth.cpp
 	adb/pairing_connection/pairing_connection.cpp
@@ -187,11 +187,9 @@ target_link_libraries(adb
 	crypto
 	ssl
 	${PROTOBUF_LIBRARIES}
-	brotlicommon
-	brotlidec
-	brotlienc
-	lz4
+	${BROTLI_LIBRARIES}
+	${LZ4_LIBRARY}
 	Threads::Threads
-	usb-1.0
+	usb
 	z
-	zstd)
+	${ZSTD_LIBRARY})

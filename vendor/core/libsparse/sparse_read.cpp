@@ -37,7 +37,7 @@
 #include "sparse_file.h"
 #include "sparse_format.h"
 
-#if defined(__APPLE__) && defined(__MACH__)
+#if (defined(__APPLE__) && defined(__MACH__)) || defined(__FreeBSD__)
 #define lseek64 lseek
 #define off64_t off_t
 #endif

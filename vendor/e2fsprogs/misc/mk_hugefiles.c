@@ -37,7 +37,7 @@ extern int optind;
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef HAVE_SYS_SYSMACROS_H
+#if defined(HAVE_SYS_SYSMACROS_H) && !defined(__FreeBSD__)
 #include <sys/sysmacros.h>
 #endif
 #include <libgen.h>

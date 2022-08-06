@@ -959,7 +959,11 @@ int launch_server(const std::string& socket_spec) {
         return -1;
     }
 
+#ifdef __FreeBSD__
+    std::string path = "/usr/local/bin/adb";
+#else
     std::string path = android::base::GetExecutablePath();
+#endif
 
     pid_t pid = fork();
     if (pid < 0) return -1;

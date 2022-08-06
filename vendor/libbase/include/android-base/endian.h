@@ -61,6 +61,8 @@
 #if defined(__APPLE__)
 /* macOS has some of the basics. */
 #include <sys/_endian.h>
+#elif defined(__FreeBSD__)
+#include <sys/endian.h>
 #else
 /* Windows has some of the basics as well. */
 #include <sys/param.h>

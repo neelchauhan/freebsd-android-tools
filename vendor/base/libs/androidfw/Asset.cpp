@@ -40,6 +40,10 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#ifdef __FreeBSD__
+#define lseek64 lseek
+#endif
+
 using namespace android;
 
 #ifndef O_BINARY
